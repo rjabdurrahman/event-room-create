@@ -9,9 +9,13 @@ let users = [];
 
 async function createRoom(users, eventId) {
     try {
-        await admin.firestore().collection('events').doc(eventId).collection('rooms').add({r: users.map(x => x.id)});
+        let roomData = users.reduce(function(result, user, index) {
+            result['u' + index] = user.id;
+            return result;
+        }, {});
+        let docRef = await admin.firestore().collection('events').doc(eventId).collection('rooms').add(roomData);
         for (x of users) {
-            x.usersRoom = 'roomId';
+            x.usersRoom = docRef.id;
             let user = JSON.parse(JSON.stringify(x));
             delete user.id;
             await admin.firestore().collection('events').doc(eventId).collection('users').doc(x.id).set(user);
