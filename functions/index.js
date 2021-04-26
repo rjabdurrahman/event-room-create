@@ -5,8 +5,6 @@ const _ = require('lodash');
 admin.initializeApp(functions.config().firestore);
 admin.firestore().settings({ timestampsInSnapshots: true });
 
-let users = [];
-
 async function createRoom(users, eventId) {
     try {
         let roomData = users.reduce(function(result, user, index) {
@@ -14,11 +12,11 @@ async function createRoom(users, eventId) {
             return result;
         }, {});
         let docRef = await admin.firestore().collection('events').doc(eventId).collection('rooms').add(roomData);
-        for (x of users) {
-            x.usersRoom = docRef.id;
-            let user = JSON.parse(JSON.stringify(x));
+        for (user of users) {
+            user.usersRoom = docRef.id;
+            let docId = user.id;
             delete user.id;
-            await admin.firestore().collection('events').doc(eventId).collection('users').doc(x.id).set(user);
+            await admin.firestore().collection('events').doc(eventId).collection('users').doc(docId).set(user);
         }
     } catch (err) {
         console.log(err);
@@ -26,13 +24,15 @@ async function createRoom(users, eventId) {
 }
 
 // Same Type Matching
-function sameTypeMatching(usersArr) {
+async function sameTypeMatching(usersArr, eventId) {
     usersArr.sort((a, b) => b.usersSpokenTo.length - a.usersSpokenTo.length);
     if (usersArr.length != 0) {
         if (usersArr.length == 1) {
-            let takernUserB = usersArr.shift();
-            takernUserB.usersRoom = null;
-            users.push(takernUserB);
+            let takernUser = usersArr.shift();
+            takernUser.usersRoom = null;
+            let docId = takernUser.id;
+            delete takernUser.id;
+            await admin.firestore().collection('events').doc(eventId).collection('users').doc(docId).set(takernUser);
             return;
         }
         else if (usersArr.length == 3) {
@@ -50,7 +50,6 @@ function sameTypeMatching(usersArr) {
                 u3.usersSpokenTo.push(u1.id, u2.id);
                 createRoom([u1, u2, u3], eventId);
             }
-            users.push(u1, u2, u3);
             return;
         }
         else if (usersArr.length == 2) {
@@ -60,12 +59,11 @@ function sameTypeMatching(usersArr) {
                 u1.usersSpokenTo.push(u2.id);
                 u2.usersSpokenTo.push(u1.id);
                 createRoom([u1, u2], eventId);
-                users.push(u1, u2);
             }
             else {
                 u1.usersRoom = null;
                 u2.usersRoom = null;
-                users.push(u1, u2);
+                // Update Database
             }
             return;
         }
@@ -76,7 +74,7 @@ function sameTypeMatching(usersArr) {
             u1.usersSpokenTo.push(u2.id);
             u2.usersSpokenTo.push(u1.id);
             createRoom([u1, u2], eventId);
-            users.push(u1, u2);
+            // Do and update database
             sameTypeMatching(usersArr);
         }
     }
@@ -84,6 +82,7 @@ function sameTypeMatching(usersArr) {
 
 
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
+    await admin.firestore().collection('events').doc(eventId).collection('rooms')
     let eventId = req.query.eventId;
     const snapshot = await admin.firestore().collection('events').doc(eventId).collection('users').get()
     let eventUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -105,10 +104,10 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
         takenUserA.usersSpokenTo.push(takenUserB.id);
         takenUserB.usersSpokenTo.push(takenUserA.id);
         createRoom([takenUserA, takenUserB], eventId)
-        users.push(takenUserA, takenUserB);
+        // users.push(takenUserA, takenUserB);
     }
     // Same Type Matching
-    sameTypeMatching(userTypeA);
-    sameTypeMatching(userTypeB);
+    sameTypeMatching(userTypeA, eventId);
+    sameTypeMatching(userTypeB, eventId);
     res.send('done');
 });
