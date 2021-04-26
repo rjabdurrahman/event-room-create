@@ -1,13 +1,15 @@
-const functions = require("firebase-functions");
-const admin = require('firebase-admin');
 const _ = require('lodash');
-
-admin.initializeApp(functions.config().firestore);
-admin.firestore().settings({ timestampsInSnapshots: true });
-
+let eventUsers = require('./data.json');
 let initRoomId = 0;
-let rooms = {};
 let users = [];
+let rooms = {};
+eventUsers.forEach(x => {
+    if (!x.usersSpokenTo) x.usersSpokenTo = [];
+    x.usersRoom = null;
+});
+var userTypeA = eventUsers.filter(x => x.userType == "A");
+var userTypeB = eventUsers.filter(x => x.userType == "B");
+
 
 function createRoom(...users) {
     let roomId = 'r' + (++initRoomId);
@@ -72,32 +74,23 @@ function sameTypeMatching(usersArr) {
     }
 }
 
-
-exports.createEventRooms = functions.https.onRequest(async (req, res) => {
-    const snapshot = await admin.firestore().collection('events').doc(req.query.eventId).collection('users').get()
-    let eventUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    eventUsers.forEach(x => {
-        if (!x.usersSpokenTo) x.usersSpokenTo = [];
-        x.usersRoom = null;
+// Different Type Matching
+while (takenUserA = userTypeA.shift()) {
+    let notSpoken = _.difference(userTypeB.map(x => x.id), takenUserA.usersSpokenTo);
+    if (notSpoken.length == 0) break;
+    let takenNotSpokenBId = notSpoken.shift();
+    let takenUserB = userTypeB.find(x => x.id == takenNotSpokenBId);
+    _.remove(userTypeB, function (c) {
+        return (c.id === takenNotSpokenBId);
     });
-    var userTypeA = eventUsers.filter(x => x.userType == "A");
-    var userTypeB = eventUsers.filter(x => x.userType == "B");
-    // Different Type Matching
-    while (takenUserA = userTypeA.shift()) {
-        let notSpoken = _.difference(userTypeB.map(x => x.id), takenUserA.usersSpokenTo);
-        if (notSpoken.length == 0) break;
-        let takenNotSpokenBId = notSpoken.shift();
-        let takenUserB = userTypeB.find(x => x.id == takenNotSpokenBId);
-        _.remove(userTypeB, function (c) {
-            return (c.id === takenNotSpokenBId);
-        });
-        takenUserA.usersSpokenTo.push(takenUserB.id);
-        takenUserB.usersSpokenTo.push(takenUserA.id);
-        createRoom(takenUserA, takenUserB)
-        users.push(takenUserA, takenUserB);
-    }
-    // Same Type Matching
-    sameTypeMatching(userTypeA);
-    sameTypeMatching(userTypeB);
-    res.send(rooms);
-});
+    takenUserA.usersSpokenTo.push(takenUserB.id);
+    takenUserB.usersSpokenTo.push(takenUserA.id);
+    createRoom(takenUserA, takenUserB)
+    users.push(takenUserA, takenUserB);
+}
+
+sameTypeMatching(userTypeA);
+sameTypeMatching(userTypeB);
+
+console.log(users);
+console.log(rooms);

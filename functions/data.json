@@ -1,0 +1,32 @@
+[
+    {
+        "id": "123fgsas",
+        "userLeft": false,
+        "userType": "B",
+        "usersSpokenTo": []
+    },
+    {
+        "id": "sgydfbd",
+        "userLeft": false,
+        "userType": "B",
+        "usersSpokenTo": ["xbdfggbfx"]
+    },
+    {
+        "id": "xbdfggbfx",
+        "userLeft": false,
+        "userType": "B",
+        "usersSpokenTo": ["sgydfbd"]
+    },
+    {
+        "id": "sdfsdfgdfs",
+        "userLeft": false,
+        "userType": "B",
+        "usersSpokenTo": ["ydgfgyfdgfy"]
+    },
+    {
+        "id": "ydgfgyfdgfy",
+        "userLeft": true,
+        "userType": "B",
+        "usersSpokenTo": ["sdfsdfgdfs"]
+    }
+]
