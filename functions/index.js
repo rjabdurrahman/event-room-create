@@ -13,7 +13,7 @@ async function createRoom(users, eventId) {
             return result;
         }, {});
         let docRef = await admin.firestore().collection('events').doc(eventId).collection('rooms').add(roomData);
-        for (user of users) {
+        for (let user of users) {
             user.usersRoom = docRef.id;
             let docId = user.id;
             delete user.id;
@@ -25,7 +25,7 @@ async function createRoom(users, eventId) {
 }
 
 async function nullUserUpdater(users, eventId) {
-    for(user of users) {
+    for(let user of users) {
         user.usersRoom = null;
         let docId = user.id;
         delete user.id;
