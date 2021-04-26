@@ -1,6 +1,7 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
 const _ = require('lodash');
+const { user } = require("firebase-functions/lib/providers/auth");
 
 admin.initializeApp(functions.config().firestore);
 admin.firestore().settings({ timestampsInSnapshots: true });
@@ -23,16 +24,21 @@ async function createRoom(users, eventId) {
     }
 }
 
+async function nullUserUpdater(users, eventId) {
+    for(user of users) {
+        user.usersRoom = null;
+        let docId = user.id;
+        delete user.id;
+        await admin.firestore().collection('events').doc(eventId).collection('users').doc(docId).set(takernUser);
+    }
+}
+
 // Same Type Matching
 async function sameTypeMatching(usersArr, eventId) {
     usersArr.sort((a, b) => b.usersSpokenTo.length - a.usersSpokenTo.length);
     if (usersArr.length != 0) {
         if (usersArr.length == 1) {
-            let takernUser = usersArr.shift();
-            takernUser.usersRoom = null;
-            let docId = takernUser.id;
-            delete takernUser.id;
-            await admin.firestore().collection('events').doc(eventId).collection('users').doc(docId).set(takernUser);
+            nullUserUpdater([usersArr.shift()]);
             return;
         }
         else if (usersArr.length == 3) {
@@ -61,20 +67,20 @@ async function sameTypeMatching(usersArr, eventId) {
                 createRoom([u1, u2], eventId);
             }
             else {
-                u1.usersRoom = null;
-                u2.usersRoom = null;
-                // Update Database
+                nullUserUpdater([u1, u2], eventId);
             }
             return;
         }
         else {
             let u1 = usersArr.shift();
             let u2 = usersArr.find(x => !x.usersSpokenTo.includes(u1.id));
-            _.remove(usersArr, u2);
-            u1.usersSpokenTo.push(u2.id);
-            u2.usersSpokenTo.push(u1.id);
-            createRoom([u1, u2], eventId);
-            // Do and update database
+            if(u2.length != 0) {
+                _.remove(usersArr, u2);
+                u1.usersSpokenTo.push(u2.id);
+                u2.usersSpokenTo.push(u1.id);
+                createRoom([u1, u2], eventId);
+            }
+            else nullUserUpdater([u1], eventId);
             sameTypeMatching(usersArr);
         }
     }
@@ -82,7 +88,6 @@ async function sameTypeMatching(usersArr, eventId) {
 
 
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
-    await admin.firestore().collection('events').doc(eventId).collection('rooms')
     let eventId = req.query.eventId;
     const snapshot = await admin.firestore().collection('events').doc(eventId).collection('users').get()
     let eventUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
