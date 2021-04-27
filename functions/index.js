@@ -117,7 +117,10 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     // Different Type Matching
     while (takenUserA = userTypeA.shift()) {
         let notSpoken = _.difference(userTypeB.map(x => x.id), takenUserA.usersSpokenTo);
-        if (notSpoken.length == 0) break;
+        if (notSpoken.length == 0) {
+            nullUserUpdater([takenUserA], eventId);
+            continue;
+        }
         let takenNotSpokenBId = notSpoken.shift();
         let takenUserB = userTypeB.find(x => x.id == takenNotSpokenBId);
         _.remove(userTypeB, function (c) {
