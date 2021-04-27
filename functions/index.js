@@ -1,7 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
 const _ = require('lodash');
-const { user } = require("firebase-functions/lib/providers/auth");
 
 admin.initializeApp(functions.config().firestore);
 admin.firestore().settings({ timestampsInSnapshots: true });
@@ -29,7 +28,12 @@ async function nullUserUpdater(users, eventId) {
         user.usersRoom = null;
         let docId = user.id;
         delete user.id;
-        await admin.firestore().collection('events').doc(eventId).collection('users').doc(docId).set(takernUser);
+        try {
+            await admin.firestore().collection('events').doc(eventId).collection('users').doc(docId).set(user);
+        }
+        catch(err) {
+            console.error(err);
+        }
     }
 }
 
@@ -38,7 +42,7 @@ async function sameTypeMatching(usersArr, eventId) {
     usersArr.sort((a, b) => b.usersSpokenTo.length - a.usersSpokenTo.length);
     if (usersArr.length != 0) {
         if (usersArr.length == 1) {
-            nullUserUpdater([usersArr.shift()]);
+            nullUserUpdater([usersArr.shift()], eventId);
             return;
         }
         else if (usersArr.length == 3) {
