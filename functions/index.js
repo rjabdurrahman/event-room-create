@@ -5,6 +5,18 @@ const _ = require('lodash');
 admin.initializeApp(functions.config().firestore);
 admin.firestore().settings({ timestampsInSnapshots: true });
 
+async function deleteOldRooms(eventId) {
+    try {
+        await admin.firestore().collection('events').doc(eventId).collection('rooms').listDocuments().then(val => {
+            val.map((val) => {
+                val.delete()
+            })
+        });
+    } catch(err) {
+        console.error(err);
+    }
+}
+
 async function createRoom(users, eventId) {
     try {
         let roomData = users.reduce(function(result, user, index) {
@@ -93,7 +105,8 @@ async function sameTypeMatching(usersArr, eventId) {
 
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     let eventId = req.query.eventId;
-    const snapshot = await admin.firestore().collection('events').doc(eventId).collection('users').get()
+    const snapshot = await admin.firestore().collection('events').doc(eventId).collection('users').get();
+    deleteOldRooms(eventId);
     let eventUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     eventUsers.forEach(x => {
         if (!x.usersSpokenTo) x.usersSpokenTo = [];
