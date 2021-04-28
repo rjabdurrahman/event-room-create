@@ -61,7 +61,9 @@ async function sameTypeMatching(usersArr, eventId) {
             let u1 = usersArr.shift();
             let u2 = usersArr.shift();
             let u3 = usersArr.shift();
-            if (u1.usersSpokenTo.includes(u2.id) && u1.usersSpokenTo.includes(u3.id) && u2.usersSpokenTo.includes(u3.id)) {
+            let refined = [u1, u2, u3].map(u => u.usersSpokenTo).flat().filter(x => [u1.id, u2.id, u3.id].includes(x));
+            console.log(refined);
+            if (refined.length == 6) {
                 nullUserUpdater([u1, u2, u3], eventId);
             }
             else {
@@ -131,7 +133,6 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
         takenUserA.usersSpokenTo.push(takenUserB.id);
         takenUserB.usersSpokenTo.push(takenUserA.id);
         createRoom([takenUserA, takenUserB], eventId)
-        // users.push(takenUserA, takenUserB);
     }
     userTypeA = [...userTypeA, ...notSpokenAs]
     // Same Type Matching
