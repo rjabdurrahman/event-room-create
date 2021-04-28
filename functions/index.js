@@ -110,13 +110,14 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
         if (!x.usersSpokenTo) x.usersSpokenTo = [];
         x.usersRoom = null;
     });
-    var userTypeA = eventUsers.filter(x => x.userType == "A");
-    var userTypeB = eventUsers.filter(x => x.userType == "B");
+    let userTypeA = eventUsers.filter(x => x.userType == "A");
+    let userTypeB = eventUsers.filter(x => x.userType == "B");
     // Different Type Matching
+    let notSpokenAs = [];
     while (takenUserA = userTypeA.shift()) {
         let notSpoken = _.difference(userTypeB.map(x => x.id), takenUserA.usersSpokenTo);
         if (notSpoken.length == 0) {
-            nullUserUpdater([takenUserA], eventId);
+            notSpokenAs.push(takenUserA);
             continue;
         }
         let takenNotSpokenBId = notSpoken.shift();
@@ -129,6 +130,7 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
         createRoom([takenUserA, takenUserB], eventId)
         // users.push(takenUserA, takenUserB);
     }
+    userTypeA = [...userTypeA, ...notSpokenAs]
     // Same Type Matching
     sameTypeMatching(userTypeA, eventId);
     sameTypeMatching(userTypeB, eventId);
