@@ -105,8 +105,8 @@ async function sameTypeMatching(usersArr, eventId) {
 
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     let eventId = req.query.eventId;
-    const snapshot = await admin.firestore().collection('events').doc(eventId).collection('users').where("userLeft", "==", false).get();
     deleteOldRooms(eventId);
+    const snapshot = await admin.firestore().collection('events').doc(eventId).collection('users').where("userLeft", "==", false).get();
     let eventUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     eventUsers.forEach(x => {
         if (!x.usersSpokenTo) x.usersSpokenTo = [];
