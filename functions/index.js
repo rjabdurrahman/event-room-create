@@ -132,5 +132,5 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     // Same Type Matching
     sameTypeMatching(userTypeA, eventId);
     sameTypeMatching(userTypeB, eventId);
-    res.send('done');
+    res.send('Rooms Created Successfully!');
 });
