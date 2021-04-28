@@ -62,8 +62,7 @@ async function sameTypeMatching(usersArr, eventId) {
             let u2 = usersArr.shift();
             let u3 = usersArr.shift();
             let refined = [u1, u2, u3].map(u => u.usersSpokenTo).flat().filter(x => [u1.id, u2.id, u3.id].includes(x));
-            console.log(refined);
-            if (refined.length == 6) {
+            if (refined.length == 9) {
                 nullUserUpdater([u1, u2, u3], eventId);
             }
             else {
