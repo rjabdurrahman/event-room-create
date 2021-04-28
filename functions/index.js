@@ -62,9 +62,7 @@ async function sameTypeMatching(usersArr, eventId) {
             let u2 = usersArr.shift();
             let u3 = usersArr.shift();
             if (u1.usersSpokenTo.includes(u2.id) || u1.usersSpokenTo.includes(u3.id) || u2.usersSpokenTo.includes(u3.id)) {
-                u1.usersRoom = null;
-                u2.usersRoom = null;
-                u3.usersRoom = null;
+                nullUserUpdater([u1, u2, u3], eventId);
             }
             else {
                 u1.usersSpokenTo.push(u2.id, u3.id);
