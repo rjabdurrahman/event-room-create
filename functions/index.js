@@ -68,6 +68,9 @@ async function sameTypeMatching(usersArr, eventId) {
                 u1.usersSpokenTo.push(u2.id, u3.id);
                 u2.usersSpokenTo.push(u1.id, u3.id);
                 u3.usersSpokenTo.push(u1.id, u2.id);
+                u1.usersSpokenTo = _.uniq(u1.usersSpokenTo);
+                u2.usersSpokenTo = _.uniq(u2.usersSpokenTo);
+                u3.usersSpokenTo = _.uniq(u3.usersSpokenTo);
                 createRoom([u1, u2, u3], eventId);
             }
             return;
