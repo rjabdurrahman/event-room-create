@@ -90,8 +90,10 @@ async function sameTypeMatching(usersArr, eventId) {
             return;
         }
         else {
+            // Do something here
             let u1 = usersArr.shift();
             let u2 = usersArr.find(x => !x.usersSpokenTo.includes(u1.id));
+            if(!u2) return;
             if(u2.length != 0) {
                 _.remove(usersArr, u2);
                 u1.usersSpokenTo.push(u2.id);
@@ -102,6 +104,7 @@ async function sameTypeMatching(usersArr, eventId) {
             sameTypeMatching(usersArr);
         }
     }
+    else return;
 }
 
 
@@ -135,7 +138,7 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     }
     userTypeA = [...userTypeA, ...notSpokenAs]
     // Same Type Matching
-    sameTypeMatching(userTypeA, eventId);
-    sameTypeMatching(userTypeB, eventId);
+    if(userTypeA.length) sameTypeMatching(userTypeA, eventId);
+    if(userTypeB.length) sameTypeMatching(userTypeB, eventId);
     res.send('Rooms Created Successfully!');
 });
