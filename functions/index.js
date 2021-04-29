@@ -12,14 +12,14 @@ async function deleteOldRooms(eventId) {
                 val.delete()
             })
         });
-    } catch(err) {
+    } catch (err) {
         console.error(err);
     }
 }
 
 async function createRoom(users, eventId) {
     try {
-        let roomData = users.reduce(function(result, user, index) {
+        let roomData = users.reduce(function (result, user, index) {
             result['u' + index] = user.id;
             return result;
         }, {});
@@ -36,14 +36,14 @@ async function createRoom(users, eventId) {
 }
 
 async function nullUserUpdater(users, eventId) {
-    for(let user of users) {
+    for (let user of users) {
         user.usersRoom = null;
         let docId = user.id;
         delete user.id;
         try {
             await admin.firestore().collection('events').doc(eventId).collection('users').doc(docId).set(user);
         }
-        catch(err) {
+        catch (err) {
             console.error(err);
         }
     }
@@ -62,7 +62,8 @@ async function sameTypeMatching(usersArr, eventId) {
             let u2 = usersArr.shift();
             let u3 = usersArr.shift();
             let refined = [u1, u2, u3].map(u => u.usersSpokenTo).flat().filter(x => [u1.id, u2.id, u3.id].includes(x));
-            if (refined.length == 9) {
+            // console.log(refined)
+            if (refined.length == 6) {
                 nullUserUpdater([u1, u2, u3], eventId);
             }
             else {
@@ -92,15 +93,18 @@ async function sameTypeMatching(usersArr, eventId) {
         else {
             // Do something here
             let u1 = usersArr.shift();
-            let u2 = usersArr.find(x => !x.usersSpokenTo.includes(u1.id));
-            if(!u2) return;
-            if(u2.length != 0) {
+            console.log(usersArr)
+            console.log(u1);
+            let notSpoken = _.difference(usersArr.map(x => x.id), u1.usersSpokenTo);
+            if (notSpoken.length == 0) {
+                nullUserUpdater([u1], eventId);
+            }
+            else {
                 _.remove(usersArr, u2);
                 u1.usersSpokenTo.push(u2.id);
                 u2.usersSpokenTo.push(u1.id);
                 createRoom([u1, u2], eventId);
             }
-            else nullUserUpdater([u1], eventId);
             sameTypeMatching(usersArr);
         }
     }
@@ -138,7 +142,7 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     }
     userTypeA = [...userTypeA, ...notSpokenAs]
     // Same Type Matching
-    if(userTypeA.length) sameTypeMatching(userTypeA, eventId);
-    if(userTypeB.length) sameTypeMatching(userTypeB, eventId);
+    if (userTypeA.length) sameTypeMatching(userTypeA, eventId);
+    if (userTypeB.length) sameTypeMatching(userTypeB, eventId);
     res.send('Rooms Created Successfully!');
 });
