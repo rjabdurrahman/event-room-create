@@ -62,7 +62,6 @@ async function sameTypeMatching(usersArr, eventId) {
             let u2 = usersArr.shift();
             let u3 = usersArr.shift();
             let refined = [u1, u2, u3].map(u => u.usersSpokenTo).flat().filter(x => [u1.id, u2.id, u3.id].includes(x));
-            // console.log(refined)
             if (refined.length == 6) {
                 nullUserUpdater([u1, u2, u3], eventId);
             }
@@ -86,26 +85,27 @@ async function sameTypeMatching(usersArr, eventId) {
                 createRoom([u1, u2], eventId);
             }
             else {
-                nullUserUpdater([u1, u2], eventId);
+                console.log('Should not pair')
+                // nullUserUpdater([u1, u2], eventId);
             }
             return;
         }
         else {
-            // Do something here
+            usersArr.sort((a, b) => b.usersSpokenTo.length - a.usersSpokenTo.length);
             let u1 = usersArr.shift();
-            console.log(usersArr)
-            console.log(u1);
-            let notSpoken = _.difference(usersArr.map(x => x.id), u1.usersSpokenTo);
+            let notSpoken = usersArr.filter(u => !u.usersSpokenTo.includes(u1.id));
             if (notSpoken.length == 0) {
                 nullUserUpdater([u1], eventId);
             }
             else {
-                _.remove(usersArr, u2);
-                u1.usersSpokenTo.push(u2.id);
-                u2.usersSpokenTo.push(u1.id);
-                createRoom([u1, u2], eventId);
+                let takenUser = notSpoken[0];
+                _.remove(usersArr, takenUser);
+                u1.usersSpokenTo.push(takenUser.id);
+                takenUser.usersSpokenTo.push(u1.id);
+                createRoom([u1, takenUser], eventId);
             }
-            sameTypeMatching(usersArr);
+            sameTypeMatching(usersArr, eventId);
+            return;
         }
     }
     else return;
