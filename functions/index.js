@@ -85,8 +85,7 @@ async function sameTypeMatching(usersArr, eventId) {
                 createRoom([u1, u2], eventId);
             }
             else {
-                console.log('Should not pair')
-                // nullUserUpdater([u1, u2], eventId);
+                nullUserUpdater([u1, u2], eventId);
             }
             return;
         }
