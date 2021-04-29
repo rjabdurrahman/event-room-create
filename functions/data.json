@@ -1,32 +1,38 @@
 [
     {
-        "id": "123fgsas",
+        "id": "a1",
+        "userLeft": false,
+        "userType": "A",
+        "usersSpokenTo": []
+    },
+    {
+        "id": "b1",
         "userLeft": false,
         "userType": "B",
         "usersSpokenTo": []
     },
     {
-        "id": "sgydfbd",
+        "id": "b2",
         "userLeft": false,
         "userType": "B",
-        "usersSpokenTo": ["xbdfggbfx"]
+        "usersSpokenTo": []
     },
     {
-        "id": "xbdfggbfx",
+        "id": "b3",
         "userLeft": false,
         "userType": "B",
-        "usersSpokenTo": ["sgydfbd"]
+        "usersSpokenTo": []
     },
     {
-        "id": "sdfsdfgdfs",
+        "id": "b4",
         "userLeft": false,
         "userType": "B",
-        "usersSpokenTo": ["ydgfgyfdgfy"]
+        "usersSpokenTo": []
     },
     {
-        "id": "ydgfgyfdgfy",
-        "userLeft": true,
+        "id": "b5",
+        "userLeft": false,
         "userType": "B",
-        "usersSpokenTo": ["sdfsdfgdfs"]
+        "usersSpokenTo": []
     }
 ]

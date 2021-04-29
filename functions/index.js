@@ -146,3 +146,4 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     if (userTypeB.length) sameTypeMatching(userTypeB, eventId);
     res.send('Rooms Created Successfully!');
 });
+exports.addDummyUsers = require('./addDummyUsers');
