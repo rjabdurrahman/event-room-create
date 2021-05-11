@@ -3,30 +3,50 @@
         "id": "a1",
         "userLeft": false,
         "userType": "A",
-        "usersSpokenTo": []
+        "usersSpokenTo": [],
+        "answers": {
+            "0": ["business"],
+            "1": ["inspiration", "support"]
+        }
     },
     {
         "id": "b1",
         "userLeft": false,
         "userType": "B",
-        "usersSpokenTo": []
+        "usersSpokenTo": [],
+        "answers": {
+            "0": ["business"],
+            "1": ["inspiration", "support"]
+        }
+    },
+    {
+        "id": "a2",
+        "userLeft": false,
+        "userType": "B",
+        "usersSpokenTo": [],
+        "answers": {
+            "0": ["business"],
+            "1": ["inspiration", "support"]
+        }
     },
     {
         "id": "b2",
         "userLeft": false,
         "userType": "B",
-        "usersSpokenTo": []
+        "usersSpokenTo": [],
+        "answers": {
+            "0": ["business"],
+            "1": ["inspiration", "support"]
+        }
     },
     {
         "id": "b3",
         "userLeft": false,
         "userType": "B",
-        "usersSpokenTo": []
-    },
-    {
-        "id": "b4",
-        "userLeft": false,
-        "userType": "B",
-        "usersSpokenTo": []
+        "usersSpokenTo": [],
+        "answers": {
+            "0": ["business"],
+            "1": ["inspiration", "support"]
+        }
     }
 ]
