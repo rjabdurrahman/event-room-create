@@ -5,6 +5,18 @@ const _ = require('lodash');
 admin.initializeApp(functions.config().firestore);
 admin.firestore().settings({ timestampsInSnapshots: true });
 
+async function deleteOldRooms(eventId) {
+    try {
+        await admin.firestore().collection('events').doc(eventId).collection('rooms').listDocuments().then(val => {
+            val.map((val) => {
+                val.delete()
+            })
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 async function getQuestions(eventId) {
     const snapshot = await admin.firestore().collection('events').doc(eventId).get();
     return snapshot.data().questions;
@@ -24,7 +36,7 @@ async function getUsers(eventId) {
 
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     let eventId = req.query.eventId;
-    // deleteOldRooms(eventId);
+    deleteOldRooms(eventId);
     let questions = await getQuestions(eventId);
     let [userTypeA, userTypeB] = await getUsers(eventId);
     res.send(userTypeB)
