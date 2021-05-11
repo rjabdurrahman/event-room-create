@@ -10,7 +10,24 @@ async function getQuestions(eventId) {
     return snapshot.data().questions;
 }
 
+async function getUsers(eventId) {
+    const snapshot = await admin.firestore().collection('events').doc(eventId).collection('users').where("userLeft", "==", false).get();
+    let eventUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    eventUsers.forEach(x => {
+        if (!x.usersSpokenTo) x.usersSpokenTo = [];
+        x.usersRoom = null;
+    });
+    let userTypeA = eventUsers.filter(x => x.userType == "A");
+    let userTypeB = eventUsers.filter(x => x.userType == "B");
+    return [userTypeA, userTypeB];
+}
+
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
-    let questions = await getQuestions('test3');
-    res.send(questions)
-})
+    let eventId = req.query.eventId;
+    // deleteOldRooms(eventId);
+    let questions = await getQuestions(eventId);
+    let [userTypeA, userTypeB] = await getUsers(eventId);
+    res.send(userTypeB)
+});
+
+exports.addDummyUsers = require('./addDummyUsers');
