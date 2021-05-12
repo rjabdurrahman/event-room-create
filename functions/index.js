@@ -49,12 +49,11 @@ function calculateScore(questions, users) {
     return score;
 }
 
-exports.createEventRooms = functions.https.onRequest(async (req, res) => {
-    let eventId = req.query.eventId;
-    deleteOldRooms(eventId);
-    let questions = await getQuestions(eventId);
-    let [userTypeA, userTypeB] = await getUsers(eventId);
-    let scoreList = [];
+let questions = null;
+let scoreList = [];
+let rooms = [];
+function differentTypeMatching(userTypeA, userTypeB) {
+    scoreList = [];
     for(userA of userTypeA) {
         for(userB of userTypeB) {
             scoreList.push({
@@ -64,7 +63,22 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
             })
         }
     }
-    res.send(scoreList.sort((a,b) => b.score - a.score));
+    if(scoreList.length == 0) return;
+    scoreList.sort((a,b) => b.score - a.score);
+    let bestMatching = scoreList.shift();
+    rooms.push(bestMatching);
+    _.remove(userTypeA, bestMatching.userA);
+    _.remove(userTypeB, bestMatching.userB);
+    differentTypeMatching(userTypeA, userTypeB);
+}
+
+exports.createEventRooms = functions.https.onRequest(async (req, res) => {
+    let eventId = req.query.eventId;
+    deleteOldRooms(eventId);
+    questions = await getQuestions(eventId);
+    let [userTypeA, userTypeB] = await getUsers(eventId);
+    differentTypeMatching(userTypeA, userTypeB);
+    res.send(rooms);
 });
 
 exports.addDummyUsers = require('./addDummyUsers');
