@@ -34,12 +34,29 @@ async function getUsers(eventId) {
     return [userTypeA, userTypeB];
 }
 
+function calculateScore(questions, users) {
+    let score = 0;
+    for(let i = 0; i < questions.length; i++) {
+        let q = questions[i];
+        if(q.type == 'single') {
+            if(users[0].answers[i][0] == users[1].answers[i][0]) score+= q.priority;
+            else score += 0;
+        }
+        else if(q.type == 'multiple') {
+            score += _.intersection(users[0].answers[i], users[1].answers[i]).length * q.priority / q.answers.length;
+        }
+    }
+    return score;
+}
+
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     let eventId = req.query.eventId;
     deleteOldRooms(eventId);
     let questions = await getQuestions(eventId);
     let [userTypeA, userTypeB] = await getUsers(eventId);
-    res.send(userTypeB)
+    let score = calculateScore(questions, [userTypeA[0], userTypeB[0]]);
+    console.log(score);
+    res.send([userTypeA[0], userTypeB[0]]);
 });
 
 exports.addDummyUsers = require('./addDummyUsers');
