@@ -65,32 +65,6 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
         }
     }
     res.send(scoreList.sort((a,b) => b.score - a.score));
-    // for(pickedUserA of userTypeA) {
-    //     let bestB = {
-    //         user: null,
-    //         score: -1
-    //     };
-    //     for(userB of userTypeB) {
-    //         let score = calculateScore(questions, [pickedUserA, userB]);
-    //         console.log(score)
-    //         if(score > bestB.score) bestB = {
-    //             user : userB,
-    //             score
-    //         }
-    //     }
-    //     let bestA = {
-    //         user : null,
-    //         score: -1
-    //     }
-    //     for(userA of userTypeA) {
-    //         let score = calculateScore(questions, [bestB.user, userA]);
-    //         if(score > bestA.score) bestA = {
-    //             user: userA,
-    //             score
-    //         }
-    //     }
-    //     console.log(bestB, bestA)
-    // }
 });
 
 exports.addDummyUsers = require('./addDummyUsers');
