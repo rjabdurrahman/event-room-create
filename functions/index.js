@@ -54,20 +54,43 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     deleteOldRooms(eventId);
     let questions = await getQuestions(eventId);
     let [userTypeA, userTypeB] = await getUsers(eventId);
-    let bestTempB = {
-        index: -1,
-        score: -1
-    };
-    for(pickedUserA of userTypeA) {
-        for(let j = 0; j < userTypeB.length; j++) {
-            let score = calculateScore(questions, [pickedUserA, userTypeB[j]]);
-            if(score > bestTempB.score) bestTempB = {
-                index : j,
-                score
-            }
+    let scoreList = [];
+    for(userA of userTypeA) {
+        for(userB of userTypeB) {
+            scoreList.push({
+                userA,
+                userB,
+                score: calculateScore(questions, [userA, userB])
+            })
         }
     }
-    res.send(bestTempB);
+    res.send(scoreList.sort((a,b) => b.score - a.score));
+    // for(pickedUserA of userTypeA) {
+    //     let bestB = {
+    //         user: null,
+    //         score: -1
+    //     };
+    //     for(userB of userTypeB) {
+    //         let score = calculateScore(questions, [pickedUserA, userB]);
+    //         console.log(score)
+    //         if(score > bestB.score) bestB = {
+    //             user : userB,
+    //             score
+    //         }
+    //     }
+    //     let bestA = {
+    //         user : null,
+    //         score: -1
+    //     }
+    //     for(userA of userTypeA) {
+    //         let score = calculateScore(questions, [bestB.user, userA]);
+    //         if(score > bestA.score) bestA = {
+    //             user: userA,
+    //             score
+    //         }
+    //     }
+    //     console.log(bestB, bestA)
+    // }
 });
 
 exports.addDummyUsers = require('./addDummyUsers');
