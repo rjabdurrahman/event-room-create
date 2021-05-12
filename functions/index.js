@@ -54,9 +54,20 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     deleteOldRooms(eventId);
     let questions = await getQuestions(eventId);
     let [userTypeA, userTypeB] = await getUsers(eventId);
-    let score = calculateScore(questions, [userTypeA[0], userTypeB[0]]);
-    console.log(score);
-    res.send([userTypeA[0], userTypeB[0]]);
+    let bestTempB = {
+        index: -1,
+        score: -1
+    };
+    for(pickedUserA of userTypeA) {
+        for(let j = 0; j < userTypeB.length; j++) {
+            let score = calculateScore(questions, [pickedUserA, userTypeB[j]]);
+            if(score > bestTempB.score) bestTempB = {
+                index : j,
+                score
+            }
+        }
+    }
+    res.send(bestTempB);
 });
 
 exports.addDummyUsers = require('./addDummyUsers');
