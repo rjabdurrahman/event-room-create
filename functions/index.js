@@ -75,11 +75,13 @@ function differentTypeMatching(userTypeA, userTypeB) {
     scoreList = [];
     for(userA of userTypeA) {
         for(userB of userTypeB) {
-            scoreList.push({
-                userA,
-                userB,
-                score: calculateScore(questions, [userA, userB])
-            })
+            if(!userA.usersSpokenTo.find(x => x.includes(userB.id))) {
+                scoreList.push({
+                    userA,
+                    userB,
+                    score: calculateScore(questions, [userA, userB])
+                })
+            }
         }
     }
     if(scoreList.length == 0) return;
