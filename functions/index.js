@@ -6,6 +6,9 @@ admin.initializeApp(functions.config().firestore);
 admin.firestore().settings({ timestampsInSnapshots: true });
 
 let eventId = '';
+let questions = null;
+let scoreList = [];
+
 async function deleteOldRooms(eventId) {
     try {
         await admin.firestore().collection('events').doc(eventId).collection('rooms').listDocuments().then(val => {
@@ -69,8 +72,6 @@ async function createRoom(users) {
     }
 }
 
-let questions = null;
-let scoreList = [];
 function differentTypeMatching(userTypeA, userTypeB) {
     scoreList = [];
     for(userA of userTypeA) {
