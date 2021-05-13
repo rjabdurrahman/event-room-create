@@ -9,7 +9,7 @@ let eventId = '';
 let questions = null;
 let scoreList = [];
 
-async function deleteOldRooms(eventId) {
+async function deleteOldRooms() {
     try {
         await admin.firestore().collection('events').doc(eventId).collection('rooms').listDocuments().then(val => {
             val.map((val) => {
@@ -106,7 +106,7 @@ function sameATypeMatching(usersA) {
 
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     eventId = req.query.eventId;
-    deleteOldRooms(eventId);
+    deleteOldRooms();
     questions = await getQuestions();
     let [userTypeA, userTypeB] = await getUsers();
     differentTypeMatching(userTypeA, userTypeB);
