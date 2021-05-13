@@ -5,7 +5,7 @@ const _ = require('lodash');
 admin.initializeApp(functions.config().firestore);
 admin.firestore().settings({ timestampsInSnapshots: true });
 
-async function deleteOldRooms() {
+async function deleteOldRooms(eventId) {
     try {
         await admin.firestore().collection('events').doc(eventId).collection('rooms').listDocuments().then(val => {
             val.map((val) => {
