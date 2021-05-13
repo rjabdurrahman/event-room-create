@@ -5,7 +5,7 @@ const _ = require('lodash');
 admin.initializeApp(functions.config().firestore);
 admin.firestore().settings({ timestampsInSnapshots: true });
 
-async function deleteOldRooms(eventId) {
+async function deleteOldRooms() {
     try {
         await admin.firestore().collection('events').doc(eventId).collection('rooms').listDocuments().then(val => {
             val.map((val) => {
@@ -17,12 +17,12 @@ async function deleteOldRooms(eventId) {
     }
 }
 
-async function getQuestions(eventId) {
+async function getQuestions() {
     const snapshot = await admin.firestore().collection('events').doc(eventId).get();
     return snapshot.data().questions;
 }
 
-async function getUsers(eventId) {
+async function getUsers() {
     const snapshot = await admin.firestore().collection('events').doc(eventId).collection('users').where("userLeft", "==", false).get();
     let eventUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     eventUsers.forEach(x => {
@@ -49,6 +49,25 @@ function calculateScore(questions, users) {
     return score;
 }
 
+async function createRoom(users) {
+    try {
+        let roomData = users.reduce(function (result, user, index) {
+            result['u' + index] = user.id;
+            return result;
+        }, {});
+        console.log(roomData);
+        let docRef = await admin.firestore().collection('events').doc(eventId).collection('rooms').add(roomData);
+        for (let user of users) {
+            user.usersRoom = docRef.id;
+            let docId = user.id;
+            delete user.id;
+            await admin.firestore().collection('events').doc(eventId).collection('users').doc(docId).set(user);
+        }
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 let questions = null;
 let scoreList = [];
 let rooms = [];
@@ -66,17 +85,19 @@ function differentTypeMatching(userTypeA, userTypeB) {
     if(scoreList.length == 0) return;
     scoreList.sort((a,b) => b.score - a.score);
     let bestMatching = scoreList.shift();
-    rooms.push(bestMatching);
+    bestMatching.userA.usersSpokenTo.push(bestMatching.userB.id);
+    bestMatching.userB.usersSpokenTo.push(bestMatching.userA.id);
+    createRoom([bestMatching.userA, bestMatching.userB], eventId);
     _.remove(userTypeA, bestMatching.userA);
     _.remove(userTypeB, bestMatching.userB);
     differentTypeMatching(userTypeA, userTypeB);
 }
-
+let eventId = '';
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
-    let eventId = req.query.eventId;
+    eventId = req.query.eventId;
     deleteOldRooms(eventId);
-    questions = await getQuestions(eventId);
-    let [userTypeA, userTypeB] = await getUsers(eventId);
+    questions = await getQuestions();
+    let [userTypeA, userTypeB] = await getUsers();
     differentTypeMatching(userTypeA, userTypeB);
     res.send(rooms);
 });
