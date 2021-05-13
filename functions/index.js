@@ -5,6 +5,7 @@ const _ = require('lodash');
 admin.initializeApp(functions.config().firestore);
 admin.firestore().settings({ timestampsInSnapshots: true });
 
+let eventId = '';
 async function deleteOldRooms(eventId) {
     try {
         await admin.firestore().collection('events').doc(eventId).collection('rooms').listDocuments().then(val => {
@@ -34,7 +35,7 @@ async function getUsers() {
     return [userTypeA, userTypeB];
 }
 
-function calculateScore(questions, users) {
+function calculateScore(users) {
     let score = 0;
     for(let i = 0; i < questions.length; i++) {
         let q = questions[i];
@@ -70,7 +71,6 @@ async function createRoom(users) {
 
 let questions = null;
 let scoreList = [];
-let rooms = [];
 function differentTypeMatching(userTypeA, userTypeB) {
     scoreList = [];
     for(userA of userTypeA) {
@@ -79,7 +79,7 @@ function differentTypeMatching(userTypeA, userTypeB) {
                 scoreList.push({
                     userA,
                     userB,
-                    score: calculateScore(questions, [userA, userB])
+                    score: calculateScore([userA, userB])
                 })
             }
         }
@@ -94,14 +94,23 @@ function differentTypeMatching(userTypeA, userTypeB) {
     _.remove(userTypeB, bestMatching.userB);
     differentTypeMatching(userTypeA, userTypeB);
 }
-let eventId = '';
+
+function sameATypeMatching(usersA) {
+    for(let i = 0; i < usersA.length - 1; i++) {
+        for(let j = i + 1; j < usersA.length; j++) {
+            console.log(calculateScore([usersA[i], usersA[j]]));
+        }
+    }
+}
+
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     eventId = req.query.eventId;
     deleteOldRooms(eventId);
     questions = await getQuestions();
     let [userTypeA, userTypeB] = await getUsers();
     differentTypeMatching(userTypeA, userTypeB);
-    res.send(rooms);
+    if(userTypeA.length) sameATypeMatching(userTypeA);
+    res.send('Done');
 });
 
 exports.addDummyUsers = require('./addDummyUsers');
