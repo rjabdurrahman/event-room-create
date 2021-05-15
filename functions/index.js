@@ -114,6 +114,7 @@ function sameTypeMatching(users) {
             }
         }
     }
+    if(sameTypeUserScoreList.length == 0) return;
     sameTypeUserScoreList.sort((a, b) => b.score - a.score);
     let bestMatching = sameTypeUserScoreList.shift();
     bestMatching.user1.usersSpokenTo.push(bestMatching.user2.id);
