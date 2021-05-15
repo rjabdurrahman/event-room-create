@@ -7,7 +7,6 @@ admin.firestore().settings({ timestampsInSnapshots: true });
 
 let eventId = '';
 let questions = null;
-let scoreList = [];
 
 async function deleteOldRooms() {
     try {
@@ -40,13 +39,13 @@ async function getUsers() {
 
 function calculateScore(users) {
     let score = 0;
-    for(let i = 0; i < questions.length; i++) {
+    for (let i = 0; i < questions.length; i++) {
         let q = questions[i];
-        if(q.type == 'single') {
-            if(users[0].answers[i][0] == users[1].answers[i][0]) score+= q.priority;
+        if (q.type == 'single') {
+            if (users[0].answers[i][0] == users[1].answers[i][0]) score += q.priority;
             else score += 0;
         }
-        else if(q.type == 'multiple') {
+        else if (q.type == 'multiple') {
             score += _.intersection(users[0].answers[i], users[1].answers[i]).length * q.priority / q.answers.length;
         }
     }
@@ -72,11 +71,12 @@ async function createRoom(users) {
     }
 }
 
+let scoreList = [];
 function differentTypeMatching(userTypeA, userTypeB) {
     scoreList = [];
-    for(userA of userTypeA) {
-        for(userB of userTypeB) {
-            if(!userA.usersSpokenTo.find(x => x.includes(userB.id))) {
+    for (userA of userTypeA) {
+        for (userB of userTypeB) {
+            if (!userA.usersSpokenTo.find(x => x.includes(userB.id))) {
                 scoreList.push({
                     userA,
                     userB,
@@ -85,23 +85,43 @@ function differentTypeMatching(userTypeA, userTypeB) {
             }
         }
     }
-    if(scoreList.length == 0) return;
-    scoreList.sort((a,b) => b.score - a.score);
+    if (scoreList.length == 0) return;
+    scoreList.sort((a, b) => b.score - a.score);
     let bestMatching = scoreList.shift();
     bestMatching.userA.usersSpokenTo.push(bestMatching.userB.id);
     bestMatching.userB.usersSpokenTo.push(bestMatching.userA.id);
-    createRoom([bestMatching.userA, bestMatching.userB], eventId);
+    createRoom([bestMatching.userA, bestMatching.userB]);
     _.remove(userTypeA, bestMatching.userA);
     _.remove(userTypeB, bestMatching.userB);
     differentTypeMatching(userTypeA, userTypeB);
 }
 
-function sameATypeMatching(usersA) {
-    for(let i = 0; i < usersA.length - 1; i++) {
-        for(let j = i + 1; j < usersA.length; j++) {
-            console.log(calculateScore([usersA[i], usersA[j]]));
+let sameTypeUserScoreList = [];
+function sameTypeMatching(users) {
+    sameTypeUserScoreList = [];
+    if (users.length == 1 || users.length == 0) { 
+        console.log('only'); 
+        return;
+    }
+    for (let i = 0; i < users.length - 1; i++) {
+        for (let j = i + 1; j < users.length; j++) {
+            if(!users[i].usersSpokenTo.find(x => x.includes(users[j].id))) {
+                sameTypeUserScoreList.push({
+                    user1: users[i],
+                    user2: users[j],
+                    score: calculateScore([users[i], users[j]])
+                });
+            }
         }
     }
+    sameTypeUserScoreList.sort((a, b) => b.score - a.score);
+    let bestMatching = sameTypeUserScoreList.shift();
+    bestMatching.user1.usersSpokenTo.push(bestMatching.user2.id);
+    bestMatching.user2.usersSpokenTo.push(bestMatching.user1.id);
+    createRoom([bestMatching.user1, bestMatching.user2]);
+    _.remove(users, bestMatching.user1);
+    _.remove(users, bestMatching.user2);
+    sameTypeMatching(users);
 }
 
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
@@ -110,7 +130,10 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     questions = await getQuestions();
     let [userTypeA, userTypeB] = await getUsers();
     differentTypeMatching(userTypeA, userTypeB);
-    if(userTypeA.length) sameATypeMatching(userTypeA);
+    if (userTypeA.length) sameTypeMatching(userTypeA);
+    if (userTypeB.length) sameTypeMatching(userTypeB);
+    console.log(userTypeA);
+    console.log(userTypeB);
     res.send('Done');
 });
 
