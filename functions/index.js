@@ -58,7 +58,6 @@ async function createRoom(users) {
             result['u' + index] = user.id;
             return result;
         }, {});
-        console.log(roomData);
         let docRef = await admin.firestore().collection('events').doc(eventId).collection('rooms').add(roomData);
         for (let user of users) {
             user.usersRoom = docRef.id;
@@ -68,6 +67,15 @@ async function createRoom(users) {
         }
     } catch (err) {
         console.log(err);
+    }
+}
+
+async function nullUserUpdate(users) {
+    for (let user of users) {
+        user.usersRoom = null;
+        let docId = user.id;
+        delete user.id;
+        await admin.firestore().collection('events').doc(eventId).collection('users').doc(docId).set(user);
     }
 }
 
@@ -133,8 +141,8 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     differentTypeMatching(userTypeA, userTypeB);
     if (userTypeA.length) sameTypeMatching(userTypeA);
     if (userTypeB.length) sameTypeMatching(userTypeB);
-    console.log(userTypeA);
-    console.log(userTypeB);
+    if(userTypeA.length) nullUserUpdate(userTypeA);
+    if(userTypeB.length) nullUserUpdate(userTypeB);
     res.send('Done');
 });
 
