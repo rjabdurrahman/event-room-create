@@ -112,6 +112,7 @@ function sameTypeMatching(users) {
     if (users.length == 1 || users.length == 0) {
         return;
     }
+    sameTypeUserScoreList = [];
     for (let i = 0; i < users.length - 1; i++) {
         for (let j = i + 1; j < users.length; j++) {
             if (!users[i].usersSpokenTo.find(x => x.includes(users[j].id))) {
@@ -140,7 +141,8 @@ function leftAsRoom(users) {
     let roomByTwoA = rooms.filter(u => u[0].userType == 'A' && u[1].userType == 'A');
     let roomByTwoB = rooms.filter(u => u[0].userType == 'B' && u[1].userType == 'B');
     if (roomByTwoA.length) {
-        for (room of roomByTwoA) {
+        leftAsScores = [];
+        for (let room of roomByTwoA) {
             for (userA of users) {
                 if (!room[0].usersSpokenTo.includes(userA.id) || room[1].usersSpokenTo.includes(userA.id)) {
                     leftAsScores.push({
@@ -160,8 +162,28 @@ function leftAsRoom(users) {
             rooms[rooms.findIndex(r => (r[0].id == bestMatching.room[0].id) && (r[1].id == bestMatching.room[1].id))].push(bestMatching.userA);
             _.remove(users, bestMatching.userA);
         }
-        else {
-
+        else if(roomByTwoB.length) {
+            leftAsScores = [];
+            for (let room of roomByTwoB) {
+                for (userA of users) {
+                    if (!room[0].usersSpokenTo.includes(userA.id) || room[1].usersSpokenTo.includes(userA.id)) {
+                        leftAsScores.push({
+                            room,
+                            userA,
+                            score: calculateScore(userA, room[0]) / 3 + calculateScore(userA, room[1]) / 3 + calculateScore(room[0], room[1]) / 3
+                        });
+                    }
+                }
+            }
+            if (leftAsScores.length) {
+                leftAsScores.sort((a, b) => b.score - a.score);
+                let bestMatching = leftAsScores.shift();
+                bestMatching.room[0].usersSpokenTo.push(bestMatching.userA.id);
+                bestMatching.room[1].usersSpokenTo.push(bestMatching.userA.id);
+                bestMatching.userA.usersSpokenTo.push(bestMatching.room[0].id, bestMatching.room[1].id);
+                rooms[rooms.findIndex(r => (r[0].id == bestMatching.room[0].id) && (r[1].id == bestMatching.room[1].id))].push(bestMatching.userA);
+                _.remove(users, bestMatching.userA);
+            }
         }
     }
 }
