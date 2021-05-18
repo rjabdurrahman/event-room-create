@@ -108,8 +108,7 @@ function differentTypeMatching(userTypeA, userTypeB) {
 let sameTypeUserScoreList = [];
 function sameTypeMatching(users) {
     sameTypeUserScoreList = [];
-    if (users.length == 1 || users.length == 0) { 
-        console.log('only', users.length); 
+    if (users.length == 1 || users.length == 0) {
         return;
     }
     for (let i = 0; i < users.length - 1; i++) {
@@ -151,6 +150,9 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     if(userTypeA.length == 1 && roomByTwoA.length == 0 && roomByTwoB.length == 0) {
         userTypeA[0].userLeft = true;
         nullUserUpdate(userTypeA);
+    }
+    else if(roomByTwoB.length) {
+        // Create room with 
     }
     res.send(rooms);
 });
