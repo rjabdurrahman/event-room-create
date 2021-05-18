@@ -148,11 +148,11 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     let roomByDifferentType = rooms.filter(u => (u[0].userType == 'A' && u[1].userType == 'B') || (u[0].userType == 'B' && u[1].userType == 'A'));
     // Update Rooms in firebase
     for(let room of rooms) createRoom(room);
-    if(userTypeA.length == 1 && roomByTwoA.length && roomByTwoB.length) {
+    if(userTypeA.length == 1 && roomByTwoA.length == 0 && roomByTwoB.length == 0) {
         userTypeA[0].userLeft = true;
-        nullUserUpdate([userTypeA]);
+        nullUserUpdate(userTypeA);
     }
-    res.send('Done');
+    res.send(rooms);
 });
 
 exports.addDummyUsers = require('./addDummyUsers');
