@@ -7,6 +7,7 @@ admin.firestore().settings({ timestampsInSnapshots: true });
 
 let eventId = '';
 let questions = null;
+let rooms = [];
 
 async function deleteOldRooms() {
     try {
@@ -98,7 +99,7 @@ function differentTypeMatching(userTypeA, userTypeB) {
     let bestMatching = scoreList.shift();
     bestMatching.userA.usersSpokenTo.push(bestMatching.userB.id);
     bestMatching.userB.usersSpokenTo.push(bestMatching.userA.id);
-    createRoom([bestMatching.userA, bestMatching.userB]);
+    rooms.push([bestMatching.userA, bestMatching.userB]);
     _.remove(userTypeA, bestMatching.userA);
     _.remove(userTypeB, bestMatching.userB);
     differentTypeMatching(userTypeA, userTypeB);
@@ -108,7 +109,7 @@ let sameTypeUserScoreList = [];
 function sameTypeMatching(users) {
     sameTypeUserScoreList = [];
     if (users.length == 1 || users.length == 0) { 
-        console.log('only'); 
+        console.log('only', users.length); 
         return;
     }
     for (let i = 0; i < users.length - 1; i++) {
@@ -127,13 +128,14 @@ function sameTypeMatching(users) {
     let bestMatching = sameTypeUserScoreList.shift();
     bestMatching.user1.usersSpokenTo.push(bestMatching.user2.id);
     bestMatching.user2.usersSpokenTo.push(bestMatching.user1.id);
-    createRoom([bestMatching.user1, bestMatching.user2]);
+    rooms.push([bestMatching.user1, bestMatching.user2]);
     _.remove(users, bestMatching.user1);
     _.remove(users, bestMatching.user2);
     sameTypeMatching(users);
 }
 
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
+    rooms = [];
     eventId = req.query.eventId;
     deleteOldRooms();
     questions = await getQuestions();
@@ -141,9 +143,10 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     differentTypeMatching(userTypeA, userTypeB);
     if (userTypeA.length) sameTypeMatching(userTypeA);
     if (userTypeB.length) sameTypeMatching(userTypeB);
-    if(userTypeA.length) nullUserUpdate(userTypeA);
-    if(userTypeB.length) nullUserUpdate(userTypeB);
-    res.send('Done');
+    let roomByTwoA = rooms.filter(u => u[0].userType == 'A' && u[1].userType == 'A');
+    // Update Rooms in firebase
+    for(let room of rooms) createRoom(room);
+    res.send(rooms);
 });
 
 exports.addDummyUsers = require('./addDummyUsers');
