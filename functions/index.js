@@ -74,6 +74,7 @@ async function createRoom(users) {
 async function nullUserUpdate(users) {
     for (let user of users) {
         user.usersRoom = null;
+        user.userLeft = true;
         let docId = user.id;
         delete user.id;
         await admin.firestore().collection('events').doc(eventId).collection('users').doc(docId).set(user);
@@ -133,6 +134,16 @@ function sameTypeMatching(users) {
     sameTypeMatching(users);
 }
 
+function leftAsRoom(users) {
+    if(users.length == 0) return;
+    let roomByTwoA = rooms.filter(u => u[0].userType == 'A' && u[1].userType == 'A');
+    let roomByTwoB = rooms.filter(u => u[0].userType == 'B' && u[1].userType == 'B');
+    if(roomByTwoA.length) {
+        console.log(users);
+        console.log(roomByTwoA);
+    }
+}
+
 exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     rooms = [];
     eventId = req.query.eventId;
@@ -142,18 +153,11 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     differentTypeMatching(userTypeA, userTypeB);
     if (userTypeA.length) sameTypeMatching(userTypeA);
     if (userTypeB.length) sameTypeMatching(userTypeB);
-    let roomByTwoA = rooms.filter(u => u[0].userType == 'A' && u[1].userType == 'A');
-    let roomByTwoB = rooms.filter(u => u[0].userType == 'B' && u[1].userType == 'B');
     let roomByDifferentType = rooms.filter(u => (u[0].userType == 'A' && u[1].userType == 'B') || (u[0].userType == 'B' && u[1].userType == 'A'));
     // Update Rooms in firebase
     for(let room of rooms) createRoom(room);
-    if(userTypeA.length == 1 && roomByTwoA.length == 0 && roomByTwoB.length == 0) {
-        userTypeA[0].userLeft = true;
-        nullUserUpdate(userTypeA);
-    }
-    else if(roomByTwoB.length) {
-        // Create room with 
-    }
+    if(userTypeA.length) leftAsRoom(userTypeA);
+    nullUserUpdate(userTypeA);
     res.send(rooms);
 });
 
