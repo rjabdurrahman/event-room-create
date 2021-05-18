@@ -196,12 +196,12 @@ function leftBsRoom(users) {
     if (roomByDifferentType.length) {
         leftBsScores = [];
         for (let room of roomByDifferentType) {
-            for (userA of users) {
-                if (!room[0].usersSpokenTo.includes(userA.id) || room[1].usersSpokenTo.includes(userA.id)) {
+            for (userB of users) {
+                if (!room[0].usersSpokenTo.includes(userB.id) || room[1].usersSpokenTo.includes(userB.id)) {
                     leftBsScores.push({
                         room,
-                        userA,
-                        score: calculateScore(userA, room[0]) / 3 + calculateScore(userA, room[1]) / 3 + calculateScore(room[0], room[1]) / 3
+                        userB,
+                        score: calculateScore(userB, room[0]) / 3 + calculateScore(userB, room[1]) / 3 + calculateScore(room[0], room[1]) / 3
                     });
                 }
             }
@@ -209,21 +209,21 @@ function leftBsRoom(users) {
         if (leftBsScores.length) {
             leftBsScores.sort((a, b) => b.score - a.score);
             let bestMatching = leftBsScores.shift();
-            bestMatching.room[0].usersSpokenTo.push(bestMatching.userA.id);
-            bestMatching.room[1].usersSpokenTo.push(bestMatching.userA.id);
-            bestMatching.userA.usersSpokenTo.push(bestMatching.room[0].id, bestMatching.room[1].id);
-            rooms[rooms.findIndex(r => (r[0].id == bestMatching.room[0].id) && (r[1].id == bestMatching.room[1].id))].push(bestMatching.userA);
-            _.remove(users, bestMatching.userA);
+            bestMatching.room[0].usersSpokenTo.push(bestMatching.userB.id);
+            bestMatching.room[1].usersSpokenTo.push(bestMatching.userB.id);
+            bestMatching.userB.usersSpokenTo.push(bestMatching.room[0].id, bestMatching.room[1].id);
+            rooms[rooms.findIndex(r => (r[0].id == bestMatching.room[0].id) && (r[1].id == bestMatching.room[1].id))].push(bestMatching.userB);
+            _.remove(users, bestMatching.userB);
         }
         else if(roomByTwoB.length) {
             leftBsScores = [];
             for (let room of roomByTwoB) {
-                for (userA of users) {
-                    if (!room[0].usersSpokenTo.includes(userA.id) || room[1].usersSpokenTo.includes(userA.id)) {
+                for (userB of users) {
+                    if (!room[0].usersSpokenTo.includes(userB.id) || room[1].usersSpokenTo.includes(userB.id)) {
                         leftBsScores.push({
                             room,
-                            userA,
-                            score: calculateScore(userA, room[0]) / 3 + calculateScore(userA, room[1]) / 3 + calculateScore(room[0], room[1]) / 3
+                            userB,
+                            score: calculateScore(userB, room[0]) / 3 + calculateScore(userB, room[1]) / 3 + calculateScore(room[0], room[1]) / 3
                         });
                     }
                 }
@@ -231,11 +231,11 @@ function leftBsRoom(users) {
             if (leftBsScores.length) {
                 leftBsScores.sort((a, b) => b.score - a.score);
                 let bestMatching = leftBsScores.shift();
-                bestMatching.room[0].usersSpokenTo.push(bestMatching.userA.id);
-                bestMatching.room[1].usersSpokenTo.push(bestMatching.userA.id);
-                bestMatching.userA.usersSpokenTo.push(bestMatching.room[0].id, bestMatching.room[1].id);
-                rooms[rooms.findIndex(r => (r[0].id == bestMatching.room[0].id) && (r[1].id == bestMatching.room[1].id))].push(bestMatching.userA);
-                _.remove(users, bestMatching.userA);
+                bestMatching.room[0].usersSpokenTo.push(bestMatching.userB.id);
+                bestMatching.room[1].usersSpokenTo.push(bestMatching.userB.id);
+                bestMatching.userB.usersSpokenTo.push(bestMatching.room[0].id, bestMatching.room[1].id);
+                rooms[rooms.findIndex(r => (r[0].id == bestMatching.room[0].id) && (r[1].id == bestMatching.room[1].id))].push(bestMatching.userB);
+                _.remove(users, bestMatching.userB);
             }
         }
     }
