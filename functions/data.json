@@ -1,32 +1,42 @@
 [
     {
-        "id": "a1",
-        "userLeft": false,
-        "userType": "A",
-        "usersSpokenTo": [],
-        "answers": {
-            "0": ["business"],
-            "1": ["inspiration", "support"]
-        }
-    },
-    {
         "id": "b1",
         "userLeft": false,
         "userType": "B",
         "usersSpokenTo": [],
         "answers": {
+            "0": ["business1"],
+            "1": ["inspiration", "support"]
+        }
+    },
+    {
+        "id": "b2",
+        "userLeft": false,
+        "userType": "B",
+        "usersSpokenTo": [],
+        "answers": {
             "0": ["business"],
+            "1": ["inspiration1", "support"]
+        }
+    },
+    {
+        "id": "a1",
+        "userLeft": false,
+        "userType": "A",
+        "usersSpokenTo": [],
+        "answers": {
+            "0": ["business1"],
             "1": ["inspiration", "support"]
         }
     },
     {
         "id": "a2",
         "userLeft": false,
-        "userType": "B",
+        "userType": "A",
         "usersSpokenTo": [],
         "answers": {
             "0": ["business"],
-            "1": ["inspiration", "support"]
+            "1": ["inspiration1", "support"]
         }
     },
     {
@@ -40,9 +50,19 @@
         }
     },
     {
-        "id": "b2",
+        "id": "a4",
         "userLeft": false,
-        "userType": "B",
+        "userType": "A",
+        "usersSpokenTo": [],
+        "answers": {
+            "0": ["business"],
+            "1": ["inspiration", "support"]
+        }
+    },
+    {
+        "id": "a5",
+        "userLeft": false,
+        "userType": "A",
         "usersSpokenTo": [],
         "answers": {
             "0": ["business"],
