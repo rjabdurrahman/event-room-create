@@ -254,9 +254,9 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     if (userTypeA.length) sameTypeMatching(userTypeA);
     if (userTypeB.length) sameTypeMatching(userTypeB);
     // Update Rooms in firebase
-    // for(let room of rooms) createRoom(room);
     if (userTypeA.length) leftAsRoom(userTypeA);
     if (userTypeB.length) leftBsRoom(userTypeB);
+    for(let room of rooms) createRoom(room);
     nullUserUpdate(userTypeA);
     nullUserUpdate(userTypeB);
     res.send(rooms);
