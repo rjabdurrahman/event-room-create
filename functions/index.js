@@ -150,7 +150,7 @@ exports.createEventRooms = functions.https.onRequest(async (req, res) => {
     for(let room of rooms) createRoom(room);
     if(userTypeA.length == 1 && roomByTwoA.length && roomByTwoB.length) {
         userTypeA[0].userLeft = true;
-        nullUserUpdate(userTypeA);
+        nullUserUpdate([userTypeA]);
     }
     res.send('Done');
 });
